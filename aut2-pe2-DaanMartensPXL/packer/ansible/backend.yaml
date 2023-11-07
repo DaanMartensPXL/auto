@@ -1,0 +1,36 @@
+- name: Setup CloudToDoApp backend
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Install Git
+      yum:
+        name: 'git'
+        state: present
+
+    - name: Clone CloudToDoApp repository
+      command: git clone -b sequelize https://github.com/DaanMartensPXL/CloudToDoApp.git
+      args:
+        chdir: '~/'
+
+    - name: Install NodeSource Node.js 16.x repo
+      command: sudo yum install https://rpm.nodesource.com/pub_16.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+
+    - name: Install Node.js and npm
+      command: sudo yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+
+    - name: Install @aws-sdk/client-s3
+      command: sudo npm install @aws-sdk/client-s3
+      args:
+        chdir: '~/CloudToDoApp/backend'
+
+    - name: Install npm dependencies for CloudToDoApp
+      command: npm install
+      args:
+        chdir: '~/CloudToDoApp/backend'
+
+    - name: Set S3 bucket name environment variable
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        line: 'S3_BUCKET_NAME="{{ s3_bucket_name }}"'
+        state: present

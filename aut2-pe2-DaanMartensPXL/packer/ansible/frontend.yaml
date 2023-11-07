@@ -1,0 +1,48 @@
+- name: Setup CloudToDoApp frontend
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Install Git
+      yum:
+        name: 'git'
+        state: present
+
+    - name: Clone CloudToDoApp repository
+      command: git clone -b sequelize https://github.com/DaanMartensPXL/CloudToDoApp.git
+      args:
+        chdir: '~/'
+
+    - name: Install NodeSource Node.js 16.x repo
+      command: sudo yum install https://rpm.nodesource.com/pub_16.x/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y
+
+    - name: Install Node.js and npm
+      command: sudo yum install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1
+
+    - name: Install Angular CLI in frontend folder
+      command: sudo npm install -g @angular/cli
+      args:
+        chdir: '~/CloudToDoApp/frontend'
+
+    - name: Install specific version of @angular-devkit/build-angular
+      command: sudo npm install @angular-devkit/build-angular@13.2.6
+      args:
+        chdir: '~/CloudToDoApp/frontend'
+
+    - name: Enable EPEL repository
+      command: sudo amazon-linux-extras enable epel
+
+    - name: Install EPEL repository
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Install Nginx
+      yum:
+        name: 'nginx'
+        state: present
+
+    - name: Install npm dependencies for CloudToDoApp frontend
+      command: npm install
+      args:
+        chdir: '~/CloudToDoApp/frontend'
